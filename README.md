@@ -48,8 +48,8 @@ All tools will be tested against the same Terraform files:
 5. **CI/CD integration** - Works with GitHub Actions?
 6. **Cloud agnostic** - Extensible to Azure/GCP?
 
-## Timeline
+## Steps
 
-- Week 1: Research + light prototyping
-- Week 2: Testing + comparison
-- Week 3: Documentation + recommendation
+- Research + light prototyping
+- Testing + comparison
+- Documentation + recommendation
