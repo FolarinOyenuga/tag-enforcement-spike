@@ -27,13 +27,14 @@ provider "aws" {
     tags = {
       business-unit = var.business_unit
       application   = var.application
-      # Missing: is-production, owner, namespace, service-area, environment
+      owner         = ""  # Empty value - should fail
+      # Missing: is-production, namespace, service-area, environment
     }
   }
 }
 
 # Scenario 3: Provider with ALL tags but using invalid variables (empty/whitespace values)
-# Uses variables from variables1.tf to demonstrate empty/whitespace detection
+# Uses variables from variables-inv.tf to demonstrate empty/whitespace detection
 provider "aws" {
   alias                       = "invalid_values"
   region                      = "eu-west-2"
