@@ -1,83 +1,72 @@
-terraform {
-  required_version = ">= 1.0"
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
-  }
-}
+# Invalid configurations to test tag enforcement tools
+# These scenarios use variables but demonstrate common mistakes
 
+# Scenario 1: Provider WITHOUT default_tags (missing tags entirely)
 provider "aws" {
+  alias                       = "no_default_tags"
   region                      = "eu-west-2"
   skip_credentials_validation = true
   skip_requesting_account_id  = true
   skip_metadata_api_check     = true
   access_key                  = "test"
   secret_key                  = "test"
+  # Missing default_tags block entirely - should fail all tag checks
 }
 
-# Invalid: Missing required tags
-resource "aws_s3_bucket" "missing_tags" {
-  bucket = "moj-invalid-bucket"
+# Scenario 2: Provider with INCOMPLETE default_tags (missing some variables)
+provider "aws" {
+  alias                       = "incomplete_tags"
+  region                      = "eu-west-2"
+  skip_credentials_validation = true
+  skip_requesting_account_id  = true
+  skip_metadata_api_check     = true
+  access_key                  = "test"
+  secret_key                  = "test"
 
-  tags = {
-    business-unit = "Platforms"
-    application   = "Some App"
-    # Missing: owner, is-production, service-area, environment-name
+  default_tags {
+    tags = {
+      business-unit = var.business_unit
+      application   = var.application
+      # Missing: is-production, owner, namespace, service-area, environment
+    }
   }
 }
 
-# Invalid: Empty tag values
-resource "aws_instance" "empty_tags" {
-  ami           = "ami-12345678"
-  instance_type = "t3.micro"
+# Scenario 3: Provider with ALL tags from variables (but variables may have empty/whitespace values)
+# When used with invalid.tfvars, this demonstrates empty/whitespace detection
+provider "aws" {
+  alias                       = "from_variables"
+  region                      = "eu-west-2"
+  skip_credentials_validation = true
+  skip_requesting_account_id  = true
+  skip_metadata_api_check     = true
+  access_key                  = "test"
+  secret_key                  = "test"
 
-  tags = {
-    business-unit    = "Platforms"
-    application      = ""  # Empty value
-    owner            = "COAT Team: coat@digital.justice.gov.uk"
-    is-production    = "false"
-    service-area     = "Cloud Optimisation"
-    environment-name = "test"
+  default_tags {
+    tags = {
+      business-unit = var.business_unit
+      application   = var.application
+      is-production = var.is_production
+      owner         = var.owner
+      namespace     = var.namespace
+      service-area  = var.service_area
+      environment   = var.environment
+    }
   }
 }
 
-# Invalid: Wrong tag values
-resource "aws_rds_cluster" "wrong_values" {
-  cluster_identifier = "moj-invalid-rds"
-  engine             = "aurora-mysql"
-
-  tags = {
-    business-unit    = "InvalidUnit"  # Not in allowed list
-    application      = "Tag Enforcement Spike"
-    owner            = "no-email-here"  # Wrong format
-    is-production    = "maybe"  # Should be true/false
-    service-area     = "Cloud Optimisation"
-    environment-name = "prod"  # Should be 'production'
-  }
+# Scenario 4: Resource using provider without default_tags
+resource "aws_s3_bucket" "no_provider_tags" {
+  provider = aws.no_default_tags
+  bucket   = "moj-bucket-no-tags"
+  # No tags inherited - should fail
 }
 
-# Invalid: Whitespace-only tag values
-resource "aws_lambda_function" "whitespace_tags" {
-  function_name = "moj-whitespace-test"
-  role          = "arn:aws:iam::123456789012:role/lambda-role"
-  handler       = "index.handler"
-  runtime       = "nodejs18.x"
-
-  tags = {
-    business-unit    = "   "  # Whitespace only
-    application      = "  "   # Whitespace only
-    owner            = "COAT Team: coat@digital.justice.gov.uk"
-    is-production    = "false"
-    service-area     = " "    # Single space
-    environment-name = "test"
-  }
-}
-
-# Invalid: No tags at all
-resource "aws_dynamodb_table" "no_tags" {
-  name         = "moj-no-tags-table"
+# Scenario 5: Resource using provider with incomplete tags
+resource "aws_dynamodb_table" "incomplete_provider_tags" {
+  provider     = aws.incomplete_tags
+  name         = "moj-table-incomplete"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "id"
 
@@ -85,4 +74,13 @@ resource "aws_dynamodb_table" "no_tags" {
     name = "id"
     type = "S"
   }
+  # Inherits only partial tags from provider - should fail for missing tags
 }
+
+# Scenario 6: Resource using variables provider (tests empty/whitespace when used with invalid.tfvars)
+resource "aws_sqs_queue" "from_variables" {
+  provider = aws.from_variables
+  name     = "moj-queue-from-vars"
+  # Tags come from variables - may have empty/whitespace values
+}
+
