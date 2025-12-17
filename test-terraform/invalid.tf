@@ -32,10 +32,10 @@ provider "aws" {
   }
 }
 
-# Scenario 3: Provider with ALL tags from variables (but variables may have empty/whitespace values)
-# When used with invalid.tfvars, this demonstrates empty/whitespace detection
+# Scenario 3: Provider with ALL tags but using invalid variables (empty/whitespace values)
+# Uses variables from variables1.tf to demonstrate empty/whitespace detection
 provider "aws" {
-  alias                       = "from_variables"
+  alias                       = "invalid_values"
   region                      = "eu-west-2"
   skip_credentials_validation = true
   skip_requesting_account_id  = true
@@ -45,13 +45,13 @@ provider "aws" {
 
   default_tags {
     tags = {
-      business-unit = var.business_unit
-      application   = var.application
-      is-production = var.is_production
-      owner         = var.owner
-      namespace     = var.namespace
-      service-area  = var.service_area
-      environment   = var.environment
+      business-unit = var.business_unit_invalid
+      application   = var.application_invalid       # Whitespace only
+      is-production = var.is_production_invalid
+      owner         = var.owner_invalid             # Whitespace only
+      namespace     = var.namespace_invalid         # Empty
+      service-area  = var.service_area_invalid      # Empty
+      environment   = var.environment_invalid
     }
   }
 }
@@ -77,10 +77,10 @@ resource "aws_dynamodb_table" "incomplete_provider_tags" {
   # Inherits only partial tags from provider - should fail for missing tags
 }
 
-# Scenario 6: Resource using variables provider (tests empty/whitespace when used with invalid.tfvars)
-resource "aws_sqs_queue" "from_variables" {
-  provider = aws.from_variables
-  name     = "moj-queue-from-vars"
-  # Tags come from variables - may have empty/whitespace values
+# Scenario 6: Resource using invalid variables provider (tests empty/whitespace detection)
+resource "aws_sqs_queue" "invalid_values" {
+  provider = aws.invalid_values
+  name     = "moj-queue-invalid-vars"
+  # Tags come from invalid variables - has empty/whitespace values
 }
 

@@ -1,43 +1,43 @@
-# Valid variables - all tags have proper values
-# Used with valid.tf to demonstrate compliant configuration
+# Invalid variables - some tags have empty/whitespace values
+# Used with invalid.tf to demonstrate non-compliant configuration
 
-variable "business_unit" {
+variable "business_unit_invalid" {
   description = "Area of the MOJ responsible for the service"
   type        = string
   default     = "Platforms"
 }
 
-variable "namespace" {
+variable "namespace_invalid" {
   description = "Kubernetes namespace for the application"
   type        = string
-  default     = "tag-enforcement-spike-dev"
+  default     = ""  # Empty - should fail
 }
 
-variable "application" {
+variable "application_invalid" {
   description = "Name of the application"
   type        = string
-  default     = "Tag Enforcement Spike"
+  default     = "  "  # Whitespace only - should fail
 }
 
-variable "environment" {
+variable "environment_invalid" {
   description = "Environment type"
   type        = string
   default     = "development"
 }
 
-variable "owner" {
+variable "owner_invalid" {
   description = "Team responsible for the service"
   type        = string
-  default     = "coat-team"
+  default     = "   "  # Whitespace only - should fail
 }
 
-variable "service_area" {
+variable "service_area_invalid" {
   description = "Service area within MoJ"
   type        = string
-  default     = "Cloud Optimisation"
+  default     = ""  # Empty - should fail
 }
 
-variable "is_production" {
+variable "is_production_invalid" {
   description = "Whether this is a production environment"
   type        = string
   default     = "false"
