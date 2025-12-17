@@ -1,108 +1,151 @@
 checks:
-  # Check for business-unit tag
+  # ============================================
+  # Provider-level default_tags checks (MoJ pattern)
+  # ============================================
+
+  # Check AWS provider has default_tags with business-unit
   - code: MOJ001
-    description: Ensure all AWS resources have the 'business-unit' tag
+    description: Ensure AWS provider has 'business-unit' in default_tags
     impact: Resources without business-unit tag cannot be attributed to a department for cost allocation
-    resolution: Add the 'business-unit' tag with a valid value (HMPPS, OPG, LAA, HMCTS, CICA, Platforms, Central Digital, Technology Services)
+    resolution: "Add 'business-unit' to provider default_tags (valid values: CICA, Central Digital, HMCTS, HMPPS, HQ, LAA, OPG, Platforms, Technology Services, YJB)"
     requiredTypes:
-      - resource
+      - provider
     requiredLabels:
-      - aws_*
+      - aws
     severity: ERROR
     matchSpec:
-      name: tags
-      action: contains
-      value: business-unit
-    errorMessage: Missing required tag 'business-unit'. All MoJ resources must have this tag for cost attribution.
+      name: default_tags
+      action: isPresent
+      subMatch:
+        name: tags
+        action: contains
+        value: business-unit
+    errorMessage: AWS provider missing 'business-unit' in default_tags. Add it with a valid business unit.
     relatedLinks:
       - https://cloud-optimisation-and-accountability.justice.gov.uk/documentation/finops-and-greenops-at-moj/standards/tagging.html
 
-  # Check for application tag
+  # Check AWS provider has default_tags with application
   - code: MOJ002
-    description: Ensure all AWS resources have the 'application' tag
+    description: Ensure AWS provider has 'application' in default_tags
     impact: Resources without application tag cannot be linked to a specific service
-    resolution: Add the 'application' tag with your service/application name
+    resolution: Add 'application' to provider default_tags with your service/application name
     requiredTypes:
-      - resource
+      - provider
     requiredLabels:
-      - aws_*
+      - aws
     severity: ERROR
     matchSpec:
-      name: tags
-      action: contains
-      value: application
-    errorMessage: Missing required tag 'application'. All MoJ resources must identify their application/service.
+      name: default_tags
+      action: isPresent
+      subMatch:
+        name: tags
+        action: contains
+        value: application
+    errorMessage: AWS provider missing 'application' in default_tags.
     relatedLinks:
       - https://cloud-optimisation-and-accountability.justice.gov.uk/documentation/finops-and-greenops-at-moj/standards/tagging.html
 
-  # Check for owner tag
+  # Check AWS provider has default_tags with owner
   - code: MOJ003
-    description: Ensure all AWS resources have the 'owner' tag
+    description: Ensure AWS provider has 'owner' in default_tags
     impact: Resources without owner tag have no accountable team for maintenance and costs
-    resolution: "Add the 'owner' tag in format 'Team Name: email@domain.com'"
+    resolution: Add 'owner' to provider default_tags (team name or team-name:email format)
     requiredTypes:
-      - resource
+      - provider
     requiredLabels:
-      - aws_*
+      - aws
     severity: ERROR
     matchSpec:
-      name: tags
-      action: contains
-      value: owner
-    errorMessage: "Missing required tag 'owner'. Format should be 'Team Name: email@domain.com'."
+      name: default_tags
+      action: isPresent
+      subMatch:
+        name: tags
+        action: contains
+        value: owner
+    errorMessage: AWS provider missing 'owner' in default_tags.
     relatedLinks:
       - https://cloud-optimisation-and-accountability.justice.gov.uk/documentation/finops-and-greenops-at-moj/standards/tagging.html
 
-  # Check for is-production tag
+  # Check AWS provider has default_tags with is-production
   - code: MOJ004
-    description: Ensure all AWS resources have the 'is-production' tag
+    description: Ensure AWS provider has 'is-production' in default_tags
     impact: Cannot determine production status for prioritization and cost analysis
-    resolution: Add the 'is-production' tag with value 'true' or 'false'
+    resolution: Add 'is-production' to provider default_tags with value 'true' or 'false'
     requiredTypes:
-      - resource
+      - provider
     requiredLabels:
-      - aws_*
+      - aws
     severity: ERROR
     matchSpec:
-      name: tags
-      action: contains
-      value: is-production
-    errorMessage: Missing required tag 'is-production'. Value must be 'true' or 'false'.
+      name: default_tags
+      action: isPresent
+      subMatch:
+        name: tags
+        action: contains
+        value: is-production
+    errorMessage: AWS provider missing 'is-production' in default_tags. Value must be 'true' or 'false'.
     relatedLinks:
       - https://cloud-optimisation-and-accountability.justice.gov.uk/documentation/finops-and-greenops-at-moj/standards/tagging.html
 
-  # Check for service-area tag
+  # Check AWS provider has default_tags with namespace
   - code: MOJ005
-    description: Ensure all AWS resources have the 'service-area' tag
-    impact: Resources cannot be grouped by service area for reporting
-    resolution: Add the 'service-area' tag identifying your team's service area
+    description: Ensure AWS provider has 'namespace' in default_tags
+    impact: Resources cannot be linked to their Kubernetes namespace
+    resolution: Add 'namespace' to provider default_tags
     requiredTypes:
-      - resource
+      - provider
     requiredLabels:
-      - aws_*
+      - aws
     severity: ERROR
     matchSpec:
-      name: tags
-      action: contains
-      value: service-area
-    errorMessage: Missing required tag 'service-area'. Identify your team's service area.
+      name: default_tags
+      action: isPresent
+      subMatch:
+        name: tags
+        action: contains
+        value: namespace
+    errorMessage: AWS provider missing 'namespace' in default_tags.
     relatedLinks:
       - https://cloud-optimisation-and-accountability.justice.gov.uk/documentation/finops-and-greenops-at-moj/standards/tagging.html
 
-  # Check for environment-name tag
+  # Check AWS provider has default_tags with service-area
   - code: MOJ006
-    description: Ensure all AWS resources have the 'environment-name' tag
-    impact: Cannot distinguish between production, staging, test, and development resources
-    resolution: Add the 'environment-name' tag with value production, staging, test, or development
+    description: Ensure AWS provider has 'service-area' in default_tags
+    impact: Resources cannot be grouped by service area for reporting
+    resolution: Add 'service-area' to provider default_tags
     requiredTypes:
-      - resource
+      - provider
     requiredLabels:
-      - aws_*
+      - aws
     severity: ERROR
     matchSpec:
-      name: tags
-      action: contains
-      value: environment-name
-    errorMessage: Missing required tag 'environment-name'. Value must be production, staging, test, or development.
+      name: default_tags
+      action: isPresent
+      subMatch:
+        name: tags
+        action: contains
+        value: service-area
+    errorMessage: AWS provider missing 'service-area' in default_tags.
+    relatedLinks:
+      - https://cloud-optimisation-and-accountability.justice.gov.uk/documentation/finops-and-greenops-at-moj/standards/tagging.html
+
+  # Check AWS provider has default_tags with environment
+  - code: MOJ007
+    description: Ensure AWS provider has 'environment' in default_tags
+    impact: Cannot distinguish between production, staging, test, and development resources
+    resolution: "Add 'environment' to provider default_tags (valid values: staging, production, development, test)"
+    requiredTypes:
+      - provider
+    requiredLabels:
+      - aws
+    severity: ERROR
+    matchSpec:
+      name: default_tags
+      action: isPresent
+      subMatch:
+        name: tags
+        action: contains
+        value: environment
+    errorMessage: "AWS provider missing 'environment' in default_tags. Value must be: staging, production, development, or test."
     relatedLinks:
       - https://cloud-optimisation-and-accountability.justice.gov.uk/documentation/finops-and-greenops-at-moj/standards/tagging.html
