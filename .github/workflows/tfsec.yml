@@ -26,13 +26,11 @@ jobs:
           mkdir -p test-terraform/.tfsec
           cp tfsec/moj_tfchecks.yaml test-terraform/.tfsec/
 
-      - name: Install tfsec
-        run: |
-          wget -q https://github.com/aquasecurity/tfsec/releases/download/v1.28.4/tfsec-linux-amd64 -O tfsec
-          chmod +x tfsec
-          sudo mv tfsec /usr/local/bin/
-
       - name: Run tfsec
         run: |
-          tfsec ./test-terraform \
+          docker run --rm \
+            -v "${{ github.workspace }}/test-terraform:/src" \
+            -v "${{ github.workspace }}/tfsec:/tfsec-config" \
+            aquasec/tfsec:latest /src \
+            --config-file /tfsec-config/moj_tfchecks.yaml \
             --exclude aws-s3-encryption-customer-key,aws-s3-enable-bucket-encryption,aws-s3-enable-bucket-logging,aws-s3-enable-versioning,aws-s3-specify-public-access-block,aws-ec2-enforce-http-token-imds,aws-ec2-enable-at-rest-encryption,aws-dynamodb-enable-at-rest-encryption,aws-dynamodb-table-customer-key,aws-lambda-enable-tracing,aws-rds-encrypt-cluster-storage-data,aws-sqs-enable-queue-encryption,aws-rds-specify-backup-retention,aws-dynamodb-enable-recovery
