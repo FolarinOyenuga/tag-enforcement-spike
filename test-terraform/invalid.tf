@@ -58,6 +58,23 @@ resource "aws_rds_cluster" "wrong_values" {
   }
 }
 
+# Invalid: Whitespace-only tag values
+resource "aws_lambda_function" "whitespace_tags" {
+  function_name = "moj-whitespace-test"
+  role          = "arn:aws:iam::123456789012:role/lambda-role"
+  handler       = "index.handler"
+  runtime       = "nodejs18.x"
+
+  tags = {
+    business-unit    = "   "  # Whitespace only
+    application      = "  "   # Whitespace only
+    owner            = "COAT Team: coat@digital.justice.gov.uk"
+    is-production    = "false"
+    service-area     = " "    # Single space
+    environment-name = "test"
+  }
+}
+
 # Invalid: No tags at all
 resource "aws_dynamodb_table" "no_tags" {
   name         = "moj-no-tags-table"

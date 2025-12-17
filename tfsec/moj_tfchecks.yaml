@@ -1,0 +1,108 @@
+checks:
+  # Check for business-unit tag
+  - code: MOJ001
+    description: Ensure all AWS resources have the 'business-unit' tag
+    impact: Resources without business-unit tag cannot be attributed to a department for cost allocation
+    resolution: Add the 'business-unit' tag with a valid value (HMPPS, OPG, LAA, HMCTS, CICA, Platforms, Central Digital, Technology Services)
+    requiredTypes:
+      - resource
+    requiredLabels:
+      - aws_*
+    severity: ERROR
+    matchSpec:
+      name: tags
+      action: contains
+      value: business-unit
+    errorMessage: Missing required tag 'business-unit'. All MoJ resources must have this tag for cost attribution.
+    relatedLinks:
+      - https://cloud-optimisation-and-accountability.justice.gov.uk/documentation/finops-and-greenops-at-moj/standards/tagging.html
+
+  # Check for application tag
+  - code: MOJ002
+    description: Ensure all AWS resources have the 'application' tag
+    impact: Resources without application tag cannot be linked to a specific service
+    resolution: Add the 'application' tag with your service/application name
+    requiredTypes:
+      - resource
+    requiredLabels:
+      - aws_*
+    severity: ERROR
+    matchSpec:
+      name: tags
+      action: contains
+      value: application
+    errorMessage: Missing required tag 'application'. All MoJ resources must identify their application/service.
+    relatedLinks:
+      - https://cloud-optimisation-and-accountability.justice.gov.uk/documentation/finops-and-greenops-at-moj/standards/tagging.html
+
+  # Check for owner tag
+  - code: MOJ003
+    description: Ensure all AWS resources have the 'owner' tag
+    impact: Resources without owner tag have no accountable team for maintenance and costs
+    resolution: "Add the 'owner' tag in format 'Team Name: email@domain.com'"
+    requiredTypes:
+      - resource
+    requiredLabels:
+      - aws_*
+    severity: ERROR
+    matchSpec:
+      name: tags
+      action: contains
+      value: owner
+    errorMessage: "Missing required tag 'owner'. Format should be 'Team Name: email@domain.com'."
+    relatedLinks:
+      - https://cloud-optimisation-and-accountability.justice.gov.uk/documentation/finops-and-greenops-at-moj/standards/tagging.html
+
+  # Check for is-production tag
+  - code: MOJ004
+    description: Ensure all AWS resources have the 'is-production' tag
+    impact: Cannot determine production status for prioritization and cost analysis
+    resolution: Add the 'is-production' tag with value 'true' or 'false'
+    requiredTypes:
+      - resource
+    requiredLabels:
+      - aws_*
+    severity: ERROR
+    matchSpec:
+      name: tags
+      action: contains
+      value: is-production
+    errorMessage: Missing required tag 'is-production'. Value must be 'true' or 'false'.
+    relatedLinks:
+      - https://cloud-optimisation-and-accountability.justice.gov.uk/documentation/finops-and-greenops-at-moj/standards/tagging.html
+
+  # Check for service-area tag
+  - code: MOJ005
+    description: Ensure all AWS resources have the 'service-area' tag
+    impact: Resources cannot be grouped by service area for reporting
+    resolution: Add the 'service-area' tag identifying your team's service area
+    requiredTypes:
+      - resource
+    requiredLabels:
+      - aws_*
+    severity: ERROR
+    matchSpec:
+      name: tags
+      action: contains
+      value: service-area
+    errorMessage: Missing required tag 'service-area'. Identify your team's service area.
+    relatedLinks:
+      - https://cloud-optimisation-and-accountability.justice.gov.uk/documentation/finops-and-greenops-at-moj/standards/tagging.html
+
+  # Check for environment-name tag
+  - code: MOJ006
+    description: Ensure all AWS resources have the 'environment-name' tag
+    impact: Cannot distinguish between production, staging, test, and development resources
+    resolution: Add the 'environment-name' tag with value production, staging, test, or development
+    requiredTypes:
+      - resource
+    requiredLabels:
+      - aws_*
+    severity: ERROR
+    matchSpec:
+      name: tags
+      action: contains
+      value: environment-name
+    errorMessage: Missing required tag 'environment-name'. Value must be production, staging, test, or development.
+    relatedLinks:
+      - https://cloud-optimisation-and-accountability.justice.gov.uk/documentation/finops-and-greenops-at-moj/standards/tagging.html
