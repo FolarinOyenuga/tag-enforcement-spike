@@ -1,3 +1,5 @@
+# Valid configuration using provider-level default_tags (MoJ pattern)
+
 terraform {
   required_version = ">= 1.0"
   required_providers {
@@ -15,32 +17,26 @@ provider "aws" {
   skip_metadata_api_check     = true
   access_key                  = "test"
   secret_key                  = "test"
+
+  default_tags {
+    tags = {
+      business-unit = var.business_unit
+      application   = var.application
+      is-production = var.is_production
+      owner         = var.owner
+      namespace     = var.namespace
+      service-area  = var.service_area
+      environment   = var.environment
+    }
+  }
 }
 
-# Valid: All required MoJ tags present
+# Valid: Tags inherited from provider default_tags
 resource "aws_s3_bucket" "valid_bucket" {
   bucket = "moj-valid-test-bucket"
-
-  tags = {
-    business-unit    = "Platforms"
-    application      = "Tag Enforcement Spike"
-    owner            = "COAT Team: coat@digital.justice.gov.uk"
-    is-production    = "false"
-    service-area     = "Cloud Optimisation"
-    environment-name = "test"
-  }
 }
 
 resource "aws_instance" "valid_instance" {
   ami           = "ami-12345678"
   instance_type = "t3.micro"
-
-  tags = {
-    business-unit    = "Platforms"
-    application      = "Tag Enforcement Spike"
-    owner            = "COAT Team: coat@digital.justice.gov.uk"
-    is-production    = "false"
-    service-area     = "Cloud Optimisation"
-    environment-name = "test"
-  }
 }
