@@ -1,4 +1,4 @@
-from checkov.terraform.checks.provider.base_provider_check import BaseProviderCheck
+from checkov.terraform.checks.provider.base_check import BaseProviderCheck
 from checkov.common.models.enums import CheckCategories, CheckResult
 
 
@@ -15,11 +15,6 @@ class AWSProviderDefaultTags(BaseProviderCheck):
         categories = [CheckCategories.CONVENTION]
         super().__init__(name=name, id=id, categories=categories, supported_provider=supported_provider)
 
-    def scan_provider_conf(self, conf):
-        """
-        Validates that the AWS provider has default_tags with all required MoJ tags.
-        Also validates that tag values are not empty or whitespace-only.
-        """
         self.required_tags = [
             "business-unit",
             "namespace",
@@ -30,14 +25,17 @@ class AWSProviderDefaultTags(BaseProviderCheck):
             "is-production"
         ]
 
+    def scan_provider_conf(self, conf):
+        """
+        Validates that the AWS provider has default_tags with all required MoJ tags.
+        Also validates that tag values are not empty or whitespace-only.
+        """
         # Check if default_tags exists
         if "default_tags" not in conf:
-            self.details = ["Missing default_tags block in AWS provider"]
             return CheckResult.FAILED
 
         default_tags = conf.get("default_tags", [])
         if not default_tags:
-            self.details = ["Empty default_tags block in AWS provider"]
             return CheckResult.FAILED
 
         # default_tags is a list of dicts
@@ -45,7 +43,6 @@ class AWSProviderDefaultTags(BaseProviderCheck):
         tags = tags_block.get("tags", [])
 
         if not tags:
-            self.details = ["No tags defined in default_tags block"]
             return CheckResult.FAILED
 
         # tags is a list with one dict
@@ -67,12 +64,6 @@ class AWSProviderDefaultTags(BaseProviderCheck):
                     empty_tags.append(required_tag)
 
         if missing_tags or empty_tags:
-            details = []
-            if missing_tags:
-                details.append(f"Missing tags: {', '.join(missing_tags)}")
-            if empty_tags:
-                details.append(f"Empty/whitespace tags: {', '.join(empty_tags)}")
-            self.details = details
             return CheckResult.FAILED
 
         return CheckResult.PASSED
