@@ -4,13 +4,13 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - 'test-terraform/**'
-      - 'tfsec/**'
+      - '**.tf'
+      - 'tfsec/*.yaml'
   push:
     branches: [main]
     paths:
-      - 'test-terraform/**'
-      - 'tfsec/**'
+      - '**.tf'
+      - 'tfsec/*.yaml'
 
 jobs:
   tfsec:
