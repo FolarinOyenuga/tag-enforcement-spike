@@ -1,5 +1,9 @@
 # tfsec Tag Enforcement
 
+## Overview
+
+tfsec is a static analysis tool for Terraform that supports custom checks via YAML configuration. This evaluation tests its ability to enforce MoJ tagging standards.
+
 ## Setup
 
 1. Custom checks must be named `*_tfchecks.yaml`
@@ -7,7 +11,19 @@
 
 ## Files
 
-- `moj_tfchecks.yaml` - MoJ tag enforcement custom checks (6 checks for 6 required tags)
+- `moj_tfchecks.yaml` - MoJ tag enforcement custom checks (7 checks for required tags)
+
+## Required Tags (MoJ Standard)
+
+| Tag | Description |
+|-----|-------------|
+| `business-unit` | Area of MoJ responsible (CICA, Central Digital, HMCTS, HMPPS, HQ, LAA, OPG, Platforms, Technology Services, YJB) |
+| `namespace` | Kubernetes namespace |
+| `application` | Application name |
+| `environment` | Environment type (staging, production, development, test) |
+| `owner` | Team responsible for the service |
+| `service-area` | Service area within MoJ |
+| `is-production` | Whether production environment ("true" or "false") |
 
 ## Usage
 
@@ -15,67 +31,75 @@
 # Scan with custom checks (auto-detected from .tfsec folder)
 tfsec ./terraform-directory
 
-# Or specify custom check directory explicitly
-tfsec --custom-check-dir ./tfsec ./terraform-directory
+# Using Docker container (recommended for CI)
+docker run --rm -v "$(pwd):/src" aquasec/tfsec:latest /src
 ```
 
-## Findings
+## Evaluation Findings
 
-### Pros
-- Easy YAML-based custom checks
-- Good error messages with file/line references
-- Also catches security issues (bonus)
-- GitHub Actions available
+### What Works ✅
 
-### Cons
-- File naming convention is strict (`*_tfchecks.yaml`)
-- Must list each resource type explicitly (no wildcards)
-- Being deprecated in favor of Trivy
-- Cannot validate tag VALUES (only presence)
+- Detects **missing tag keys** in provider `default_tags`
+- Custom checks with `aws_*` wildcard for all AWS resources
+- Provider-level enforcement (MoJ pattern using `default_tags`)
+- Docker container integration in GitHub Actions
+- Clear error messages with file/line references
+- Easy YAML-based custom check configuration
 
-### Limitations Discovered
-- `action: contains` only checks if tag KEY exists in map
-- `regexMatches` works on string attributes, NOT map values
-- Cannot access `tags["business-unit"]` value for validation
-- Cannot enforce `business-unit` must be in allowed list
-- Cannot enforce `owner` format with regex
-- Cannot detect empty string `""` or whitespace `"   "` tag values
-- For value validation, need OPA, checkov, or custom tool
+### Limitations ❌
+
+| Limitation | Details |
+|------------|---------|
+| Cannot detect empty values | `owner = ""` passes validation |
+| Cannot detect whitespace-only values | `owner = "   "` passes validation |
+| Cannot validate value format | No regex validation on tag values |
+| Being deprecated | tfsec is joining Trivy family |
+
+### Root Cause
+
+tfsec's `matchSpec` only supports `action: contains` which checks if a **key exists** in a map - it cannot access or validate the **value**.
+
+```yaml
+# This only checks if 'owner' KEY exists, not its value
+matchSpec:
+  name: default_tags
+  action: isPresent
+  subMatch:
+    name: tags
+    action: contains
+    value: owner
+```
 
 ### regexMatches Investigation
+
 Tested using `regexMatches` to validate tag values - **does not work**.
 The action is designed for top-level string attributes (like `acl`, `source`),
 not for values inside maps/objects like `tags`.
 
 ## Test Results
 
-```
-invalid.tf resources:
-- missing_tags: Caught (missing 4 tags)
-- empty_tags: NOT caught (empty value not detected)
-- wrong_values: NOT caught (invalid values not detected)
-- whitespace_tags: NOT caught (whitespace-only values not detected)
-- no_tags: Caught (missing all 6 tags)
+| Scenario | Result |
+|----------|--------|
+| Provider without `default_tags` | ✅ Caught - all tag checks fail |
+| Provider with incomplete `default_tags` | ✅ Caught - missing tags detected |
+| Provider with `owner = ""` (empty) | ❌ Not caught - key exists |
+| Provider with whitespace-only values | ❌ Not caught - key exists |
+| Valid provider with all tags | ✅ Passed |
 
-valid.tf resources:
-- All passed tag checks ✅
-```
-
-## Empty/Whitespace Value Detection
-
-| Test Case | tfsec Result |
-|-----------|--------------|
-| `application = ""` | ❌ Not caught |
-| `business-unit = "   "` | ❌ Not caught |
-| `service-area = " "` | ❌ Not caught |
-
-**tfsec cannot detect empty or whitespace-only tag values.**
-
-## GitHub Actions
+## GitHub Actions Integration
 
 See `.github/workflows/tfsec.yml` for CI integration.
 
 The workflow:
-1. Copies custom checks to `.tfsec/` folder
-2. Runs tfsec with built-in security checks excluded
-3. Fails PR if missing tags detected
+1. Runs tfsec in Docker container
+2. Copies custom checks to `.tfsec/` folder
+3. Excludes built-in security checks (focus on tags)
+4. Fails PR if missing tags detected
+
+## Conclusion
+
+**tfsec is suitable for:** Detecting missing tag keys at the provider level.
+
+**tfsec is NOT suitable for:** Validating tag values (empty, whitespace, format).
+
+**For 100% tagging compliance (key + value validation), consider:** checkov, OPA/Conftest, or custom tooling.
