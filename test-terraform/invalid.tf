@@ -61,7 +61,16 @@ provider "aws" {
 resource "aws_s3_bucket" "no_provider_tags" {
   provider = aws.no_default_tags
   bucket   = "moj-bucket-no-tags"
-  # No tags inherited - should fail
+
+  tags = {
+    business-unit = var.business_unit
+    namespace     = var.namespace
+    application   = var.application
+    environment   = var.environment
+    owner         = var.owner
+    service-area  = var.service_area
+    is-production = var.is_production
+  }
 }
 
 # Scenario 5: Resource using provider with incomplete tags
@@ -75,13 +84,31 @@ resource "aws_dynamodb_table" "incomplete_provider_tags" {
     name = "id"
     type = "S"
   }
-  # Inherits only partial tags from provider - should fail for missing tags
+
+  tags = {
+    business-unit = var.business_unit
+    namespace     = var.namespace
+    application   = var.application
+    environment   = var.environment
+    owner         = var.owner
+    service-area  = var.service_area
+    is-production = var.is_production
+  }
 }
 
 # Scenario 6: Resource using invalid variables provider (tests empty/whitespace detection)
 resource "aws_sqs_queue" "invalid_values" {
   provider = aws.invalid_values
   name     = "moj-queue-invalid-vars"
-  # Tags come from invalid variables - has empty/whitespace values
+
+  tags = {
+    business-unit = var.business_unit
+    namespace     = var.namespace
+    application   = var.application
+    environment   = var.environment
+    owner         = var.owner
+    service-area  = var.service_area
+    is-production = var.is_production
+  }
 }
 
