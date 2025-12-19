@@ -16,8 +16,12 @@ resource "aws_lambda_function" "no_tags" {
   filename      = "lambda.zip"
   
   tags = {
-    business-unit = var.business_unit
-    application   = var.application
-    owner         = ""
+    business-unit    = var.business_unit
+    namespace        = var.namespace
+    application      = var.application
+    environment      = var.environment
+    owner            = var.owner
+    service-area     = var.service_area
+    is-production    = var.is_production
   }
 }
