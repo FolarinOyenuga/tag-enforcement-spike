@@ -45,3 +45,4 @@ jobs:
           output_format: cli
           soft_fail: false
           check: CKV_MOJ_001
+          repo_root_for_plan_enrichment: test-terraform
