@@ -4,7 +4,7 @@
 variable "business_unit" {
   description = "Area of the MOJ responsible for the service"
   type        = string
-  default     = "Platforms"
+  default     = "Gas"
 }
 
 variable "namespace" {
@@ -28,7 +28,7 @@ variable "environment" {
 variable "owner" {
   description = "Team responsible for the service"
   type        = string
-  default     = " "
+  default     = "coat-team"
 }
 
 variable "service_area" {
