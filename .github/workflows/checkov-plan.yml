@@ -1,0 +1,47 @@
+name: checkov Plan-Based Tag Validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '**.tf'
+  push:
+    branches: [main]
+    paths:
+      - '**.tf'
+  workflow_dispatch:
+
+jobs:
+  checkov-plan:
+    name: checkov Plan-Based Tag Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.5.0"
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        working-directory: test-terraform
+        run: terraform init -backend=false
+
+      - name: Terraform Plan
+        working-directory: test-terraform
+        run: |
+          terraform plan -out=tfplan.binary
+          terraform show -json tfplan.binary > tfplan.json
+
+      - name: Run checkov on Plan
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          file: test-terraform/tfplan.json
+          framework: terraform_plan
+          external_checks_dirs: checkov/policies
+          output_format: cli
+          soft_fail: false
+          check: CKV_MOJ_001
