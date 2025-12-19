@@ -11,6 +11,10 @@ on:
       - '**.tf'
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   checkov-plan:
     name: checkov Plan-Based Tag Check
@@ -37,11 +41,70 @@ jobs:
           terraform show -json tfplan.binary > tfplan.json
 
       - name: Run checkov on Plan
+        id: checkov
         uses: bridgecrewio/checkov-action@v12
+        continue-on-error: true
         with:
           file: test-terraform/tfplan.json
           framework: terraform_plan
           external_checks_dirs: checkov/policies
-          output_format: cli
+          output_format: cli,json
+          output_file_path: console,checkov-results.json
           soft_fail: false
           check: CKV_MOJ_001
+          repo_root_for_plan_enrichment: test-terraform
+
+      - name: Post PR Comment
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            let commentBody = '## 🏷️ Checkov Tag Validation Results\n\n';
+            
+            const checkovOutcome = '${{ steps.checkov.outcome }}';
+            
+            if (checkovOutcome === 'success') {
+              commentBody += '✅ **All resources have required MoJ tags**\n\n';
+              commentBody += 'Tag validation passed. All Terraform resources comply with MoJ tagging standards.\n';
+            } else {
+              commentBody += '❌ **Tag validation failed**\n\n';
+              commentBody += 'Some resources are missing required tags or have empty values.\n\n';
+              
+              // Try to read checkov results
+              try {
+                const results = JSON.parse(fs.readFileSync('checkov-results.json', 'utf8'));
+                const failed = results.results?.failed_checks || [];
+                
+                if (failed.length > 0) {
+                  commentBody += '### Failed Resources\n\n';
+                  commentBody += '| Resource | File | Details |\n';
+                  commentBody += '|----------|------|---------|\n';
+                  
+                  for (const check of failed) {
+                    const resource = check.resource || 'Unknown';
+                    const file = check.file_path ? `${check.file_path}:${check.file_line_range?.[0] || '?'}` : 'N/A';
+                    const details = check.check_result?.evaluated_keys?.join(', ') || check.guideline || '';
+                    commentBody += `| \`${resource}\` | \`${file}\` | ${details} |\n`;
+                  }
+                  commentBody += '\n';
+                }
+              } catch (e) {
+                commentBody += `*Could not parse detailed results*\n\n`;
+              }
+              
+              commentBody += '**Required tags:** `business-unit`, `namespace`, `application`, `environment`, `owner`, `service-area`, `is-production`\n\n';
+              commentBody += `🔗 [View workflow logs](${context.payload.repository.html_url}/actions/runs/${context.runId})\n`;
+            }
+            
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: commentBody
+            });
+
+      - name: Fail if checkov failed
+        if: steps.checkov.outcome == 'failure'
+        run: exit 1
