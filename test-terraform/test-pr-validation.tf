@@ -14,5 +14,12 @@ resource "aws_lambda_function" "no_tags" {
   handler       = "index.handler"
   runtime       = "nodejs18.x"
   filename      = "lambda.zip"
-  # No tags - should fail
+  
+  default_tags {
+    tags = {
+      business-unit = var.business_unit
+      application   = var.application
+      owner         = ""
+    }
+  }
 }
