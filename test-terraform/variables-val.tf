@@ -28,7 +28,7 @@ variable "environment" {
 variable "owner" {
   description = "Team responsible for the service"
   type        = string
-  default     = "coat-team"
+  default     = " "
 }
 
 variable "service_area" {
