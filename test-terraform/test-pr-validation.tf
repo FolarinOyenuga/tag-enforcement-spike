@@ -13,5 +13,6 @@ resource "aws_lambda_function" "no_tags" {
   role          = "arn:aws:iam::123456789012:role/lambda-role"
   handler       = "index.handler"
   runtime       = "nodejs18.x"
+  filename      = "lambda.zip"  # Required for terraform plan
   # No tags - should fail
 }
