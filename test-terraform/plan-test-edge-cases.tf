@@ -2,9 +2,9 @@
 # These test if checkov can detect issues in RESOLVED variable values
 
 # Test 1: Valid tags via variables (should PASS)
+# Uses default provider from valid.tf which has all required tags
 resource "aws_s3_bucket" "plan_test_valid" {
-  provider = aws.default
-  bucket   = "moj-plan-test-valid-bucket"
+  bucket = "moj-plan-test-valid-bucket"
   # Tags inherited from provider default_tags with valid variable values
 }
 
@@ -32,8 +32,7 @@ resource "aws_sqs_queue" "plan_test_missing_tags" {
 
 # Test 4: Resource with direct empty tag value (should FAIL)
 resource "aws_sns_topic" "plan_test_direct_empty" {
-  provider = aws.default
-  name     = "moj-plan-test-direct-empty"
+  name = "moj-plan-test-direct-empty"
 
   tags = {
     custom-override = ""  # Direct empty value - should be caught
