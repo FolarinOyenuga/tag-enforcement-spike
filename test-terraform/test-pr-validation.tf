@@ -4,7 +4,16 @@
 resource "aws_sqs_queue" "missing_all_tags" {
   provider = aws.no_default_tags
   name     = "test-queue-no-tags"
-  # No tags inherited from provider - should fail all MOJ tag checks
+
+  tags = {
+    business-unit = var.business_unit
+    namespace     = var.namespace
+    application   = var.application
+    environment   = var.environment
+    owner         = var.owner
+    service-area  = var.service_area
+    is-production = var.is_production
+  }
 }
 
 resource "aws_lambda_function" "no_tags" {
