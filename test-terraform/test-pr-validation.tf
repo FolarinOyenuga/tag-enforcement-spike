@@ -15,11 +15,9 @@ resource "aws_lambda_function" "no_tags" {
   runtime       = "nodejs18.x"
   filename      = "lambda.zip"
   
-  default_tags {
-    tags = {
-      business-unit = var.business_unit
-      application   = var.application
-      owner         = ""
-    }
+  tags = {
+    business-unit = var.business_unit
+    application   = var.application
+    owner         = ""
   }
 }
