@@ -43,10 +43,7 @@ jobs:
       - name: Run Conftest
         id: conftest
         run: |
-          # Run conftest and capture exit code (disable set -e to capture exit code)
           set +e
-          
-          # Run with text output for readable logs
           echo "=== OPA/Conftest Tag Validation ==="
           docker run --rm \
             -v "${{ github.workspace }}/test-terraform:/project" \
@@ -54,7 +51,6 @@ jobs:
             openpolicyagent/conftest test /project/tfplan.json --policy /policy 2>&1 | tee conftest-output.txt
           CONFTEST_EXIT=${PIPESTATUS[0]}
           
-          # Also save JSON for PR comment parsing
           docker run --rm \
             -v "${{ github.workspace }}/test-terraform:/project" \
             -v "${{ github.workspace }}/opa/policy:/policy" \
@@ -62,10 +58,6 @@ jobs:
           
           set -e
           
-          echo ""
-          echo "=== Conftest Exit Code: $CONFTEST_EXIT ==="
-          
-          # Use conftest exit code directly (0 = success, non-zero = failures)
           if [ $CONFTEST_EXIT -eq 0 ]; then
             echo "result=success" >> $GITHUB_OUTPUT
             echo "✅ All resources have required MoJ tags"
