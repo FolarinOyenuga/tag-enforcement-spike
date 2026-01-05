@@ -1,9 +1,4 @@
 checks:
-  # ============================================
-  # Provider-level default_tags checks (MoJ pattern)
-  # ============================================
-
-  # Check AWS provider has default_tags with business-unit
   - code: MOJ001
     description: Ensure AWS provider has 'business-unit' in default_tags
     impact: Resources without business-unit tag cannot be attributed to a department for cost allocation
@@ -24,7 +19,6 @@ checks:
     relatedLinks:
       - https://cloud-optimisation-and-accountability.justice.gov.uk/documentation/finops-and-greenops-at-moj/standards/tagging.html
 
-  # Check AWS provider has default_tags with application
   - code: MOJ002
     description: Ensure AWS provider has 'application' in default_tags
     impact: Resources without application tag cannot be linked to a specific service
@@ -45,7 +39,6 @@ checks:
     relatedLinks:
       - https://cloud-optimisation-and-accountability.justice.gov.uk/documentation/finops-and-greenops-at-moj/standards/tagging.html
 
-  # Check AWS provider has default_tags with owner
   - code: MOJ003
     description: Ensure AWS provider has 'owner' in default_tags
     impact: Resources without owner tag have no accountable team for maintenance and costs
@@ -66,7 +59,6 @@ checks:
     relatedLinks:
       - https://cloud-optimisation-and-accountability.justice.gov.uk/documentation/finops-and-greenops-at-moj/standards/tagging.html
 
-  # Check AWS provider has default_tags with is-production
   - code: MOJ004
     description: Ensure AWS provider has 'is-production' in default_tags
     impact: Cannot determine production status for prioritization and cost analysis
@@ -87,7 +79,6 @@ checks:
     relatedLinks:
       - https://cloud-optimisation-and-accountability.justice.gov.uk/documentation/finops-and-greenops-at-moj/standards/tagging.html
 
-  # Check AWS provider has default_tags with namespace
   - code: MOJ005
     description: Ensure AWS provider has 'namespace' in default_tags
     impact: Resources cannot be linked to their Kubernetes namespace
@@ -108,7 +99,6 @@ checks:
     relatedLinks:
       - https://cloud-optimisation-and-accountability.justice.gov.uk/documentation/finops-and-greenops-at-moj/standards/tagging.html
 
-  # Check AWS provider has default_tags with service-area
   - code: MOJ006
     description: Ensure AWS provider has 'service-area' in default_tags
     impact: Resources cannot be grouped by service area for reporting
@@ -129,7 +119,6 @@ checks:
     relatedLinks:
       - https://cloud-optimisation-and-accountability.justice.gov.uk/documentation/finops-and-greenops-at-moj/standards/tagging.html
 
-  # Check AWS provider has default_tags with environment
   - code: MOJ007
     description: Ensure AWS provider has 'environment' in default_tags
     impact: Cannot distinguish between production, staging, test, and development resources
