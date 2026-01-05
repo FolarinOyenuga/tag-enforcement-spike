@@ -119,4 +119,16 @@ jobs:
 
       - name: Fail if violations found
         if: steps.conftest.outputs.result == 'failure'
-        run: exit 1
+        run: |
+          echo "=============================================="
+          echo "❌ OPA/Conftest Tag Validation FAILED"
+          echo "=============================================="
+          echo ""
+          echo "The following resources have tag violations:"
+          echo ""
+          cat conftest-output.txt
+          echo ""
+          echo "=============================================="
+          echo "Required MoJ tags: business-unit, namespace, application, environment, owner, service-area, is-production"
+          echo "=============================================="
+          exit 1
