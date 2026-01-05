@@ -5,12 +5,10 @@ on:
     branches: [main]
     paths:
       - '**.tf'
-      - 'opa/**'
   push:
     branches: [main]
     paths:
       - '**.tf'
-      - 'opa/**'
   workflow_dispatch:
 
 permissions:
