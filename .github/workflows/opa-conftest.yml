@@ -42,16 +42,17 @@ jobs:
 
       - name: Run Conftest
         id: conftest
-        continue-on-error: true
         run: |
-          # Run conftest and capture exit code
+          # Run conftest and capture exit code (disable set -e to capture exit code)
+          set +e
           docker run --rm \
             -v "${{ github.workspace }}/test-terraform:/project" \
             -v "${{ github.workspace }}/opa/policy:/policy" \
-            openpolicyagent/conftest test /project/tfplan.json --policy /policy -o json > conftest-results.json
-          CONFTEST_EXIT=$?
+            openpolicyagent/conftest test /project/tfplan.json --policy /policy -o json | tee conftest-results.json
+          CONFTEST_EXIT=${PIPESTATUS[0]}
+          set -e
           
-          cat conftest-results.json
+          echo "Conftest exit code: $CONFTEST_EXIT"
           
           # Use conftest exit code directly (0 = success, non-zero = failures)
           if [ $CONFTEST_EXIT -eq 0 ]; then
