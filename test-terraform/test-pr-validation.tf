@@ -34,3 +34,14 @@ resource "aws_lambda_function" "no_tags" {
     is-production    = var.is_production
   }
 }
+
+# Test resource for OPA validation - missing required tags
+resource "aws_sns_topic" "opa_test_missing_tags" {
+  provider = aws.no_default_tags
+  name     = "opa-test-topic"
+  
+  tags = {
+    business-unit = var.business_unit
+    application   = var.application
+  }
+}
