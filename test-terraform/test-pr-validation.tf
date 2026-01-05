@@ -90,3 +90,19 @@ resource "aws_sns_topic" "opa_test_zero_tags" {
   provider = aws.no_default_tags
   name     = "opa-test-zero-tags"
 }
+
+# Valid resource: all required tags with valid values
+resource "aws_sqs_queue" "opa_test_valid_tags" {
+  provider = aws.no_default_tags
+  name     = "opa-test-valid-tags"
+  
+  tags = {
+    business-unit = var.business_unit
+    namespace     = var.namespace
+    application   = var.application
+    environment   = var.environment
+    owner         = var.owner
+    service-area  = var.service_area
+    is-production = var.is_production
+  }
+}
