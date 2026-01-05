@@ -1,0 +1,106 @@
+name: OPA/Conftest Plan-Based Tag Validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '**.tf'
+  push:
+    branches: [main]
+    paths:
+      - '**.tf'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  conftest-plan:
+    name: OPA/Conftest Plan-Based Tag Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.5.0"
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        working-directory: test-terraform
+        run: terraform init -backend=false
+
+      - name: Terraform Plan
+        working-directory: test-terraform
+        run: |
+          terraform plan -out=tfplan.binary
+          terraform show -json tfplan.binary > tfplan.json
+
+      - name: Run Conftest
+        id: conftest
+        continue-on-error: true
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}/test-terraform:/project" \
+            -v "${{ github.workspace }}/opa/policy:/policy" \
+            openpolicyagent/conftest test /project/tfplan.json --policy /policy -o json > conftest-results.json
+          
+          cat conftest-results.json
+          
+          # Check if there are failures
+          if grep -q '"failures":\[\]' conftest-results.json 2>/dev/null || [ ! -s conftest-results.json ]; then
+            echo "result=success" >> $GITHUB_OUTPUT
+          else
+            echo "result=failure" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Post PR Comment
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            let commentBody = '## 🏷️ OPA/Conftest Tag Validation Results\n\n';
+            
+            const conftestResult = '${{ steps.conftest.outputs.result }}';
+            
+            if (conftestResult === 'success') {
+              commentBody += '✅ **All resources have required MoJ tags**\n\n';
+              commentBody += 'Tag validation passed. All Terraform resources comply with MoJ tagging standards.\n';
+            } else {
+              commentBody += '❌ **Tag validation failed**\n\n';
+              
+              try {
+                const results = JSON.parse(fs.readFileSync('conftest-results.json', 'utf8'));
+                const failures = results[0]?.failures || [];
+                
+                if (failures.length > 0) {
+                  commentBody += '### Policy Violations\n\n';
+                  for (const failure of failures) {
+                    commentBody += `- ${failure.msg}\n`;
+                  }
+                  commentBody += '\n';
+                }
+              } catch (e) {
+                commentBody += `*Could not parse detailed results*\n\n`;
+              }
+              
+              commentBody += '**Required tags:** `business-unit`, `namespace`, `application`, `environment`, `owner`, `service-area`, `is-production`\n\n';
+              commentBody += `🔗 [View workflow logs](${context.payload.repository.html_url}/actions/runs/${context.runId})\n`;
+            }
+            
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: commentBody
+            });
+
+      - name: Fail if violations found
+        if: steps.conftest.outputs.result == 'failure'
+        run: exit 1
