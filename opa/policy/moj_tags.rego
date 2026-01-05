@@ -1,6 +1,5 @@
-# MoJ Tag Enforcement Policy for Terraform Plan
-# Validates that cloud resources have all required tags with non-empty values
-# Cloud-agnostic: works with any resource that has tags/tags_all in the plan
+# MoJ Tag Enforcement Policy
+# Cloud-agnostic: validates tags on AWS, Azure, and GCP resources via Terraform plan JSON
 
 package main
 
@@ -8,7 +7,6 @@ import future.keywords.in
 import future.keywords.contains
 import future.keywords.if
 
-# Required MoJ tags
 required_tags := [
     "business-unit",
     "namespace",
@@ -19,7 +17,6 @@ required_tags := [
     "is-production"
 ]
 
-# Deny if resource has NO tags at all
 deny contains msg if {
     resource := input.resource_changes[_]
     resource.change.actions[_] != "delete"
@@ -35,7 +32,6 @@ deny contains msg if {
     ])
 }
 
-# Deny if resource is missing any required tags
 deny contains msg if {
     resource := input.resource_changes[_]
     resource.change.actions[_] != "delete"
@@ -53,7 +49,6 @@ deny contains msg if {
     ])
 }
 
-# Deny if resource has empty tag values
 deny contains msg if {
     resource := input.resource_changes[_]
     resource.change.actions[_] != "delete"
@@ -71,7 +66,6 @@ deny contains msg if {
     ])
 }
 
-# Check if resource is a taggable cloud resource
 is_taggable_resource(resource) if {
     startswith(resource.type, "aws_")
 }
@@ -84,8 +78,6 @@ is_taggable_resource(resource) if {
     startswith(resource.type, "google_")
 }
 
-# Get tags from resource (checks tags_all first, then tags, then labels for GCP)
-# Returns empty object if tags are null or missing
 get_tags(resource) := tags if {
     tags := resource.change.after.tags_all
     not is_null(tags)
@@ -100,7 +92,6 @@ get_tags(resource) := tags if {
     is_object(tags)
 } else := {}
 
-# Find missing required tags
 missing_tags(tags) := missing if {
     missing := [tag | 
         tag := required_tags[_]
@@ -108,7 +99,6 @@ missing_tags(tags) := missing if {
     ]
 }
 
-# Find tags with empty or whitespace-only values
 empty_tags(tags) := empty if {
     empty := [tag |
         tag := required_tags[_]
@@ -117,7 +107,6 @@ empty_tags(tags) := empty if {
     ]
 }
 
-# Check if value is empty or whitespace-only
 is_empty_value(value) if {
     value == null
 }
