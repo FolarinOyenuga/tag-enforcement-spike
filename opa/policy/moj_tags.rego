@@ -85,12 +85,19 @@ is_taggable_resource(resource) if {
 }
 
 # Get tags from resource (checks tags_all first, then tags, then labels for GCP)
+# Returns empty object if tags are null or missing
 get_tags(resource) := tags if {
     tags := resource.change.after.tags_all
+    not is_null(tags)
+    is_object(tags)
 } else := tags if {
     tags := resource.change.after.tags
+    not is_null(tags)
+    is_object(tags)
 } else := tags if {
     tags := resource.change.after.labels
+    not is_null(tags)
+    is_object(tags)
 } else := {}
 
 # Find missing required tags
