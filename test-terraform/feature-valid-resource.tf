@@ -9,6 +9,6 @@ resource "aws_sqs_queue" "feature_queue" {
     environment   = "development"
     owner         = "COAT: cloud-optimisation@digital.justice.gov.uk"
     service-area  = "Cloud Optimisation"
-    is-production = ""
+    is-production = "false"
   }
 }
