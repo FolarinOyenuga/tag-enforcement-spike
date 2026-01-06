@@ -3,7 +3,7 @@ resource "aws_sqs_queue" "feature_queue" {
   name     = "feature-valid-queue"
 
   tags = {
-    business-unit = "Octo"
+    business-unit = ""
     namespace     = "cloud-platform"
     application   = "Feature Valid Tags Test"
     environment   = "development"
