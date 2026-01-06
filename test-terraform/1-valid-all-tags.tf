@@ -1,4 +1,4 @@
-resource "aws_s3_bucket" "valid_bucket" {
+resource "aws_s3_bucket" "demo_valid_bucket" {
   provider = aws.no_default_tags
   bucket   = "demo-valid-bucket"
 
