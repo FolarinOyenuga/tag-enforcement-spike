@@ -34,3 +34,75 @@ resource "aws_lambda_function" "no_tags" {
     is-production    = var.is_production
   }
 }
+
+# Test resource for OPA validation - missing required tags
+resource "aws_sns_topic" "opa_test_missing_tags" {
+  provider = aws.no_default_tags
+  name     = "opa-test-topic"
+  
+  tags = {
+    business-unit = var.business_unit
+    application   = var.application
+  }
+}
+
+# Edge case: empty tag values
+resource "aws_sqs_queue" "opa_test_empty_tags" {
+  provider = aws.no_default_tags
+  name     = "opa-test-empty-tags"
+  
+  tags = {
+    business-unit = var.business_unit
+    namespace     = var.namespace_invalid      # empty ""
+    application   = var.application
+    environment   = var.environment
+    owner         = var.owner
+    service-area  = var.service_area_invalid   # empty ""
+    is-production = var.is_production
+  }
+}
+
+# Edge case: whitespace-only tag values
+resource "aws_dynamodb_table" "opa_test_whitespace_tags" {
+  provider       = aws.no_default_tags
+  name           = "opa-test-whitespace-tags"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "id"
+  
+  attribute {
+    name = "id"
+    type = "S"
+  }
+  
+  tags = {
+    business-unit = var.business_unit
+    namespace     = var.namespace
+    application   = var.application_invalid    # whitespace "  "
+    environment   = var.environment
+    owner         = var.owner_invalid          # whitespace "   "
+    service-area  = var.service_area
+    is-production = var.is_production
+  }
+}
+
+# Edge case: no tags at all
+resource "aws_sns_topic" "opa_test_zero_tags" {
+  provider = aws.no_default_tags
+  name     = "opa-test-zero-tags"
+}
+
+# Valid resource: all required tags with valid values
+resource "aws_sqs_queue" "opa_test_valid_tags" {
+  provider = aws.no_default_tags
+  name     = "opa-test-valid-tags"
+  
+  tags = {
+    business-unit = var.business_unit
+    namespace     = var.namespace
+    application   = var.application
+    environment   = var.environment
+    owner         = var.owner
+    service-area  = var.service_area
+    is-production = var.is_production
+  }
+}
